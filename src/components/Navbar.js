@@ -18,8 +18,8 @@ function Navbar() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [user, setUser] = useState({
-    email: "informapa@clubnet.mz",
-    password: "Informapa2023#",
+    email: "christian@gmail.com",
+    password: "christian",
   });
   const [showDialog, setShowDialog] = useState({
     status: false,

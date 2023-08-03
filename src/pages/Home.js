@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import { isIP, isIPv4 } from "is-ip";
 
 const loading = require("../assets/loading.gif");
+const loading2 = require("../assets/loading.gif");
 const arrow = require("../assets/terminal.png");
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_REMOTE_API,
+  baseURL: process.env.REACT_APP_LOCAL_API,
 });
 
 function Home() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoading2, setIsLoading2] = useState(false);
   const [currentClient, setCurrentClient] = useState({ client: "" });
   const [result, setResult] = useState("");
   const [showDialog, setShowDialog] = useState({
@@ -18,10 +21,11 @@ function Home() {
     message: "",
     type: "",
   });
+
   const [command, setCommand] = useState("/getUser");
   const [user, setUser] = useState({
-    email: "informapa@clubnet.mz",
-    password: "Informapa2023#",
+    email: "christian@gmail.com",
+    password: "christian",
   });
   const [token, setToken] = useState("");
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
@@ -33,7 +37,8 @@ function Home() {
     "Reset password",
     "Wifi and Password",
     "Get user",
-    "custom command",
+    "Custom command",
+    "Test api",
   ];
 
   const [abortController, setAbortController] = useState(null);
@@ -77,13 +82,13 @@ function Home() {
   );
 
   useEffect(() => {
-    login();
+    // login();
     const controller = new AbortController();
     setAbortController(controller);
   }, []);
 
   function sendCommand() {
-    if (currentClient) {
+    if (currentClient && isIP(currentClient.trim())) {
       try {
         if (result === null || !isLoading) {
           setIsLoading(true);
@@ -106,7 +111,7 @@ function Home() {
               setIsLoading(false);
               if (err.message === "Timeout occurred")
                 document.getElementById("test-result").innerText =
-                  "Timeout occurred while waiting for a response";
+                  "Timeout while waiting for a response";
               console.log(err.message);
             })
             .finally(() => {
@@ -115,15 +120,52 @@ function Home() {
         }
       } catch (err) {
         setIsLoading(false);
-        alert(
+        callDialog(
+          "error",
           "Error occurred while reseting password, please check your internet connection"
         );
         console.log(err.message);
       }
     } else {
-      alert("Type an IP on the input box");
+      callDialog("error", "Type an IP on the input box");
     }
   }
+
+  function runDiagnosis() {
+    if (currentClient && isIP(currentClient.client.trim())) {
+      try {
+        if (result === null || !isLoading2) {
+          setIsLoading2(true);
+          api
+            .post("/runTest", currentClient, {
+              signal: abortSignal,
+            })
+            .then((resp) => {
+              console.log(resp.data);
+              setResult(resp.data);
+              setIsLoading2(false);
+            })
+            .catch((err) => {
+              setIsLoading2(false);
+              if (err.message === "Timeout occurred")
+                document.getElementById("test-result").innerText =
+                  "Could not connect";
+              console.log(err.message);
+            });
+        }
+      } catch (err) {
+        setIsLoading2(false);
+        callDialog(
+          "error",
+          "Error occurred while reseting password, please check your internet connection"
+        );
+        console.log(err.message);
+      }
+    } else {
+      callDialog("error", "Type an IP on the input box");
+    }
+  }
+
   function changeContact() {
     const contactbox = document.getElementById("contact");
     var text = contactbox.options[contactbox.selectedIndex].text;
@@ -164,12 +206,21 @@ function Home() {
       document.getElementById("contact").value = "Get user";
       document.getElementById("input-contact").focus();
     }
+    if (text === "Get user") {
+      // document.getElementById("custom-command").setVisibility = "true";
+    }
+    if (text === "Test api") {
+      setCommand("/testapi");
+      document.getElementById("contact").value = "Get user";
+      document.getElementById("input-contact").focus();
+    }
   }
 
   function handleKeyDown(event) {
     if (event.keyCode === 13) {
       if (abortSignal && abortSignal.aborted) stopTest();
-      else sendCommand();
+      // else sendCommand();
+      else runDiagnosis();
     }
     if (event.keyCode === 38) {
       setSelectedOptionIndex(Math.max(selectedOptionIndex - 1, 0));
@@ -211,7 +262,7 @@ function Home() {
               <select
                 id="contact"
                 type="text"
-                className="rounded-lg bg-[#dadada] text-[#484848] text-md p-2 hover:cursor-pointer"
+                className="rounded-lg bg-[#dadada] text-[#484848] text-md p-2 hidden hover:cursor-pointer"
                 onChange={changeContact}
                 value={options[selectedOptionIndex]}
                 onKeyDown={handleKeyDown}
@@ -240,10 +291,12 @@ function Home() {
                     min={5}
                     pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
                     placeholder="Enter an IP address"
-                    className="input input-bordered input-accent sm:w-full sm:min-w-[350px] sm:max-w-xs text-xl"
+                    className={` ${
+                      result ? "input-success" : "input-error"
+                    } input  input-bordered sm:w-full sm:min-w-[350px] sm:max-w-xs text-xl duration-300 transform-all`}
                   />
                 </div>
-                <button
+                {/* <button
                   id="test-button"
                   type="submit"
                   onClick={() => sendCommand(currentClient)}
@@ -261,6 +314,27 @@ function Home() {
                     src={loading}
                     className={`w-[30px] ${
                       isLoading ? "block" : "hidden"
+                    } hover:cursor-pointer`}
+                  />
+                </button> */}
+                <button
+                  id="test-button"
+                  type="submit"
+                  onClick={() => runDiagnosis(currentClient)}
+                  className={` ${
+                    !isLoading2 ? "btn btn-error w-fit" : "block"
+                  } duration-150 transition-all`}
+                >
+                  <img
+                    src={arrow}
+                    alt="button"
+                    className={`w-[20px] ${!isLoading2 ? "block" : "hidden"}`}
+                  />
+                  <img
+                    onClick={stopTest}
+                    src={loading2}
+                    className={`w-[30px] ${
+                      isLoading2 ? "block" : "hidden"
                     } hover:cursor-pointer`}
                   />
                 </button>

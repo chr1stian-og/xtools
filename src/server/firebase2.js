@@ -3,12 +3,12 @@ const { getAuth } = require("firebase/auth");
 const { getFirestore } = require("@firebase/firestore");
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBe8fOKbyEMK3xd0qMWMSYIAzV89iplYbI",
-  authDomain: "clubnet-email-tester.firebaseapp.com",
-  projectId: "clubnet-email-tester",
-  storageBucket: "clubnet-email-tester.appspot.com",
-  messagingSenderId: "338443058534",
-  appId: "1:338443058534:web:c039b43be73da09ddc5ca7",
+  apiKey: "AIzaSyCwAp57crfhoB8ZQawyTiCTorpwXi1gQbM",
+  authDomain: "xtools-24590.firebaseapp.com",
+  projectId: "xtools-24590",
+  storageBucket: "xtools-24590.appspot.com",
+  messagingSenderId: "820500167691",
+  appId: "1:820500167691:web:ee1d3480b0f8d810471b0e",
 };
 
 const app_auth = initializeApp(firebaseConfig);

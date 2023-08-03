@@ -16,6 +16,7 @@
     "firebase-admin": "^11.9.0",
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
+    "is-ip": "^5.0.0",
     "jsonwebtoken": "^9.0.1",
     "node-ssh": "^13.1.0",
     "nodemon": "^2.0.22",
@@ -33,7 +34,8 @@
     "start": "concurrently \"react-scripts start\" \"nodemon ./src/server/connection.js\" ",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "upload": "npm run build && tar -zcvf build.tar.gz build/ && scp -P 2022 build.tar.gz root@65.21.165.114:/var/www/html/xtools/ && rm build.tar.gz"
   },
   "eslintConfig": {
     "extends": [

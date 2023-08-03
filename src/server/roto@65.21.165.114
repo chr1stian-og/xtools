@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const sendCommand = require("./sendCommand");
-const testClient = require("./testClient");
 const jwt = require("jsonwebtoken");
 // const firebaseAuth = require("firebase-admin");
 // const credentials = require("./firebase-credentials.json");
@@ -28,29 +27,30 @@ app.use(cors());
 const PORT = process.env.PORT || 3003;
 let TOKEN = "no token";
 
-// ssl server;
-// const options = {
-//   key: fs.readFileSync(
-//     "/etc/letsencrypt/live/christianmacarthur.com/privkey.pem"
-//   ),
-//   cert: fs.readFileSync(
-//     "/etc/letsencrypt/live/christianmacarthur.com/cert.pem"
-//   ),
-//   ca: fs.readFileSync("/etc/letsencrypt/live/christianmacarthur.com/chain.pem"),
-// };
-// https.createServer(options, app).listen(PORT, () => {
-//   console.log(`Secure server running on port ${PORT}...`);
-// });
+// ssl;
+const options = {
+  key: fs.readFileSync(
+    "/etc/letsencrypt/live/christianmacarthur.com/privkey.pem"
+  ),
+  cert: fs.readFileSync(
+    "/etc/letsencrypt/live/christianmacarthur.com/cert.pem"
+  ),
+  ca: fs.readFileSync("/etc/letsencrypt/live/christianmacarthur.com/chain.pem"),
+};
 
-//unsecure server
-try {
-  app.listen(PORT, () => console.log(`Backend on port ${PORT}...`));
-} catch (e) {
-  console.log(
-    "An error ocurred with the server. Read the error log for more details.",
-    e.message
-  );
-}
+//listener
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Secure server running on port ${PORT}...`);
+});
+
+// try {
+//   app.listen(PORT, () => console.log(`Backend on port ${PORT}...`));
+// } catch (e) {
+//   console.log(
+//     "An error ocurred with the server. Read the error log for more details.",
+//     e.message
+//   );
+// }
 
 //functions
 function sendResponse(res, status, text, err) {
@@ -60,7 +60,7 @@ function sendResponse(res, status, text, err) {
 }
 
 function timeoutMiddleware(req, res, next) {
-  const timer = 6000;
+  const timer = 3600;
 
   let responseSent = false;
   const timeoutTimer = setTimeout(() => {
@@ -143,37 +143,37 @@ app.get("/api/testToken", (req, res) => {
 //   }
 // });
 
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body || {
-    email: "christian@gmail.com",
-    password: "christian",
-  };
+// app.post("/api/login", async (req, res) => {
+//   const { email, password } = req.body || {
+//     email: "christian@gmail.com",
+//     password: "christian",
+//   };
 
-  const isLoggedIn = auth.currentUser;
-  if (isLoggedIn) {
-    return res.json({ accessToken: TOKEN });
-  }
+//   const isLoggedIn = auth.currentUser;
+//   if (isLoggedIn) {
+//     return res.json({ accessToken: TOKEN });
+//   }
 
-  try {
-    const login = await signInWithEmailAndPassword(auth, email, password);
+//   try {
+//     const login = await signInWithEmailAndPassword(auth, email, password);
 
-    if (login) {
-      const options = {
-        expiresIn: "10m",
-      };
+//     if (login) {
+//       const options = {
+//         expiresIn: "10m",
+//       };
 
-      const accessToken = jwt.sign(
-        { email, password },
-        process.env.ACCESS_TOKEN_SECRET,
-        options
-      );
-      TOKEN = accessToken;
-      return res.status(200).json({ accessToken: accessToken });
-    }
-  } catch (error) {
-    return res.status(401).json({ error: error.message });
-  }
-});
+//       const accessToken = jwt.sign(
+//         { email, password },
+//         process.env.ACCESS_TOKEN_SECRET,
+//         options
+//       );
+//       TOKEN = accessToken;
+//       return res.status(200).json({ accessToken: accessToken });
+//     }
+//   } catch (error) {
+//     return res.status(401).json({ error: error.message });
+//   }
+// });
 
 app.post("/api/getInterfaceNumber", async (req, res) => {
   const { client } = req.body;
@@ -226,20 +226,6 @@ app.post("/api/resetPassword", async (req, res) => {
     console.log(e);
     return res.json("Unable to complete request");
   }
-});
-
-app.post("/api/runTest", async (req, res) => {
-  const { client } = req.body || {};
-  console.log("Testing ", client.toString(10).trim(), "...");
-
-  testClient(client.toString(10).trim())
-    .then((result) => {
-      return res.json(result);
-    })
-    .catch((error) => {
-      console.log(error.message);
-      return res.status(500).json("Unable to complete request");
-    });
 });
 
 app.post("/api/getWifiNameAndPassword", async (req, res) => {
