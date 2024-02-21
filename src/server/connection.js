@@ -25,7 +25,7 @@ app.use(timeoutMiddleware);
 app.use(cors());
 
 //Global
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3001;
 let TOKEN = "no token";
 
 // ssl server;
@@ -234,7 +234,8 @@ app.post("/api/runTest", async (req, res) => {
 
   testClient(client.toString(10).trim())
     .then((result) => {
-      return res.json(result);
+      console.log(JSON.stringify(result));
+      res.json(result);
     })
     .catch((error) => {
       console.log(error.message);

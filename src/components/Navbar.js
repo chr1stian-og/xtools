@@ -120,6 +120,11 @@ function Navbar() {
         <div className="flex-none">
           <ul className="menu menu-horizontal px-1">
             <li>
+              <a href="https://email.christianmacarthur.com/">
+                <h1 className="duration-150 transition-all font-bold text-lg">Email tester</h1>
+              </a>
+            </li>
+            <li>
               <a
                 onClick={login}
                 className={` ${
@@ -131,7 +136,7 @@ function Navbar() {
                   type="submit"
                   className={`duration-150 transition-all`}
                 >
-                  <span className={`${!isLoading ? "block" : "hidden"}`}>
+                  <span className={`${!isLoading ? "block" : "hidden"} font-bold text-lg`}>
                     Login
                   </span>
                   <img
@@ -142,19 +147,6 @@ function Navbar() {
                   />
                 </h1>
               </a>
-            </li>
-            <li>
-              <details>
-                <summary>Settings</summary>
-                <ul className="p-2 bg-base-100">
-                  <li>
-                    <a>Multiple</a>
-                  </li>
-                  <li>
-                    <a>Settings</a>
-                  </li>
-                </ul>
-              </details>
             </li>
           </ul>
         </div>

@@ -35,10 +35,10 @@ function Home() {
     "Remove hack",
     "Reboot",
     "Reset password",
-    "Wifi and Password",
+    // "Wifi and Password",
     "Get user",
     "Custom command",
-    "Test api",
+    // "Test api",
   ];
 
   const [abortController, setAbortController] = useState(null);
@@ -135,22 +135,34 @@ function Home() {
     if (currentClient && isIP(currentClient.client.trim())) {
       try {
         if (result === null || !isLoading2) {
+          setResult("");
           setIsLoading2(true);
-          api
-            .post("/runTest", currentClient, {
+          const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+              reject(new Error("Timeout occurred"));
+            }, 10000);
+          });
+          Promise.race([
+            api.post("/runTest", currentClient, {
               signal: abortSignal,
-            })
+            }),
+            timeoutPromise,
+          ])
             .then((resp) => {
-              console.log(resp.data);
+              console.log("result data: " + JSON.stringify(resp.data));
               setResult(resp.data);
               setIsLoading2(false);
             })
             .catch((err) => {
+              console.log("Error: " + err);
               setIsLoading2(false);
-              if (err.message === "Timeout occurred")
-                document.getElementById("test-result").innerText =
-                  "Could not connect";
-              console.log(err.message);
+              if (err.message === "Timeout occurred") console.log(err.message);
+              setResult("Could not connect");
+              document.getElementById("test-result").innerHTML =
+                "Could not connect";
+            })
+            .finally(() => {
+              setAbortController(null);
             });
         }
       } catch (err) {
@@ -240,6 +252,19 @@ function Home() {
     }
   };
 
+  const response = () => {
+    if (result.isConnected) {
+      console.log(result.speed.currentDownload);
+      return `
+        Signal: ${result.signal} \n
+        Traffic: ${result.ethernetStatus === true ? "Running" : "Not running"}
+        
+        `;
+    } else {
+      return result.isConnected === false && `Could not connect to device`;
+    }
+  };
+
   return (
     <>
       <div className="h-screen">
@@ -262,7 +287,7 @@ function Home() {
               <select
                 id="contact"
                 type="text"
-                className="rounded-lg bg-[#dadada] text-[#484848] text-md p-2 hidden hover:cursor-pointer"
+                className="rounded-lg bg-[#dadada] hidden text-[#484848] text-md p-2  hover:cursor-pointer"
                 onChange={changeContact}
                 value={options[selectedOptionIndex]}
                 onKeyDown={handleKeyDown}
@@ -290,10 +315,18 @@ function Home() {
                     onKeyDown={handleKeyDown}
                     min={5}
                     pattern="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-                    placeholder="Enter an IP address"
+                    placeholder="Enter client IP"
                     className={` ${
-                      result ? "input-success" : "input-error"
-                    } input  input-bordered sm:w-full sm:min-w-[350px] sm:max-w-xs text-xl duration-300 transform-all`}
+                      result.status === "blue"
+                        ? "input-info"
+                        : result.status === "green"
+                        ? "input-success"
+                        : result.status === "orange"
+                        ? "input-warning"
+                        : result.status === "red"
+                        ? "input-error"
+                        : "border-[#1D283A] border-2"
+                    } input input-bordered sm:w-full sm:min-w-[350px] sm:max-w-xs text-xl duration-500 hover:scale-105 transform-all`}
                   />
                 </div>
                 {/* <button
@@ -322,8 +355,18 @@ function Home() {
                   type="submit"
                   onClick={() => runDiagnosis(currentClient)}
                   className={` ${
-                    !isLoading2 ? "btn btn-error w-fit" : "block"
-                  } duration-150 transition-all`}
+                    !isLoading2
+                      ? result.status === "blue"
+                        ? "btn btn-info w-fit"
+                        : result.status === "green"
+                        ? "btn btn-success w-fit"
+                        : result.status === "orange"
+                        ? "btn btn-warning w-fit"
+                        : result.status === "red"
+                        ? "btn btn-error w-fit"
+                        : "btn btn-neutral w-fit"
+                      : "block"
+                  } duration-150 hover:scale-105  transition-all`}
                 >
                   <img
                     src={arrow}
@@ -344,20 +387,17 @@ function Home() {
           <div
             className={` ${
               result
-                ? "mx-8 sm:mx-28 my-16 text-center flex flex-row items-center align-center justify-center px-10 py-20 bg-[#dadada] rounded-xl"
+                ? // ? "mx-8 sm:mx-28  my-16 text-center flex items-center align-center justify-center px-10 py-20 bg-[#dadada] rounded-xl"
+                  "text-center items-center align-center justify-center  rounded-xl"
                 : "hidden"
             }`}
           >
             <h1
               id="test-result"
-              className={`
-        ${
-          result === "Password reset successfully"
-            ? "text-green-600"
-            : "text-[#484848]"
-        } text-xl font-bold`}
+              className="flex mt-10 mix-blend-overlay min-w-max font-bold text-xl justify-center items-center align-center"
             >
-              {result || "No Data"}
+              {/* <h1  className={`text-[#484848] text-xl font-bold`}> */}
+              {response()}
             </h1>
           </div>
         </div>

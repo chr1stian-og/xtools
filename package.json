@@ -18,6 +18,7 @@
     "https": "^1.0.0",
     "is-ip": "^5.0.0",
     "jsonwebtoken": "^9.0.1",
+    "mathjs": "^11.9.1",
     "node-ssh": "^13.1.0",
     "nodemon": "^2.0.22",
     "radius": "^1.1.4",
@@ -35,7 +36,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "upload": "npm run build && tar -zcvf build.tar.gz build/ && scp -P 2022 build.tar.gz root@65.21.165.114:/var/www/html/xtools/ && rm build.tar.gz"
+    "upload": "npm run build && tar -zcvf build.tar.gz build/ && scp -i key.cer build.tar.gz christian@13.247.21.148:. && rm build.tar.gz"
   },
   "eslintConfig": {
     "extends": [
